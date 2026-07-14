@@ -14,6 +14,25 @@
 - 使用 OpenAI 或 Claude 润色固定话术、回应简单闲聊；
 - 未配置 API Key 或模型不可用时，自动使用本地兜底话术。
 
+## 界面展示
+
+进入系统后，机器人会主动询问是否开始训练。点击右下角菜单，可使用说话、开始、休息、疼痛、结束和重复等快捷操作。进入训练后，机器人每次会呈现不同的表情和提示符号，让陪练过程更自然、更有变化。
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/images/01-ready-to-train.jpg" width="230" alt="机器人等待用户开始康复训练"><br><sub>准备开始</sub></td>
+    <td align="center"><img src="docs/images/02-control-menu.jpg" width="230" alt="康复陪练机器人的快捷操作与安全菜单"><br><sub>快捷操作与安全入口</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/images/03-training-expression-1.jpg" width="230" alt="康复训练中的机器人表情示例一"><br><sub>训练表情示例 1</sub></td>
+    <td align="center"><img src="docs/images/04-training-expression-2.jpg" width="230" alt="康复训练中的机器人表情示例二"><br><sub>训练表情示例 2</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/images/05-training-expression-3.jpg" width="230" alt="康复训练中的机器人表情示例三"><br><sub>训练表情示例 3</sub></td>
+    <td align="center"><img src="docs/images/06-training-expression-4.jpg" width="230" alt="康复训练中的机器人表情示例四"><br><sub>训练表情示例 4</sub></td>
+  </tr>
+</table>
+
 ## 为什么采用“规则 + 大模型”
 
 康复训练需要稳定、明确的流程，不能让大模型自由决定动作、次数或医疗建议。因此，本项目将职责分开：
