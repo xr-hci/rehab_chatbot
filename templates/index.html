@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>康复陪练机器人</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #03040a;
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+            color: white;
+            overflow: hidden;
+        }
+
+        .robot-screen {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background:
+                radial-gradient(circle at 18% 18%, rgba(0, 180, 255, 0.24), transparent 30%),
+                radial-gradient(circle at 82% 18%, rgba(120, 95, 255, 0.22), transparent 30%),
+                linear-gradient(180deg, #080b12 0%, #03040a 100%);
+            overflow: hidden;
+        }
+
+        .top-info {
+            position: absolute;
+            top: 14px;
+            left: 18px;
+            right: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            font-size: 13px;
+            opacity: 0.76;
+        }
+
+        .pill {
+            padding: 7px 11px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            backdrop-filter: blur(8px);
+        }
+
+        .face-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 74px 20px 118px;
+        }
+
+        .emotion-mark {
+            height: 56px;
+            font-size: 46px;
+            color: #ffd166;
+            text-shadow: 0 0 18px rgba(255, 209, 102, 0.85);
+            margin-bottom: 6px;
+        }
+
+        .eyes {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 68px;
+            margin-bottom: 12px;
+            transition: all 0.32s ease;
+        }
+
+        .eye {
+            width: 96px;
+            height: 124px;
+            border-radius: 50%;
+            background: #35caff;
+            position: relative;
+            overflow: hidden;
+            box-shadow:
+                0 0 26px rgba(53, 202, 255, 0.9),
+                0 0 52px rgba(53, 202, 255, 0.42),
+                inset 0 -12px 20px rgba(0,0,0,0.16);
+            transition: all 0.28s ease;
+        }
+
+        .eye::before {
+            content: "";
+            position: absolute;
+            left: 42%;
+            top: 56%;
+            width: 20%;
+            height: 18%;
+            border-radius: 50%;
+            background: rgba(5, 22, 36, 0.42);
+            animation: pupilLook 5.8s ease-in-out infinite;
+            transition: all 0.28s ease;
+        }
+
+        .eye::after {
+            content: "";
+            position: absolute;
+            left: 54%;
+            top: 44%;
+            width: 19%;
+            height: 17%;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.9);
+            animation: glintLook 5.8s ease-in-out infinite;
+            transition: all 0.28s ease;
+        }
+
+        .eyes.happy .eye {
+            height: 72px;
+            border-radius: 50% 50% 42% 42%;
+            transform: translateY(14px);
+            background: #4edbff;
+        }
+
+        .eyes.praise {
+            gap: 58px;
+        }
+
+        .eyes.praise .eye {
+            height: 68px;
+            width: 110px;
+            border-radius: 999px 999px 42px 42px;
+            transform: translateY(18px) rotate(-4deg);
+            background: #7ef0c1;
+            box-shadow:
+                0 0 26px rgba(126, 240, 193, 0.9),
+                0 0 52px rgba(126, 240, 193, 0.42),
+                inset 0 -10px 18px rgba(0,0,0,0.12);
+        }
+
+        .eyes.praise .eye:nth-child(2) {
+            transform: translateY(18px) rotate(4deg);
+        }
+
+        .eyes.praise .eye::after {
+            left: 62%;
+            top: 18%;
+            width: 16%;
+            height: 16%;
+            box-shadow: -44px 3px 0 rgba(255,255,255,0.72);
+        }
+
+        .eyes.rest .eye {
+            height: 16px;
+            width: 106px;
+            border-radius: 999px;
+            transform: translateY(24px);
+            background: #9beaff;
+        }
+
+        .eyes.serious .eye {
+            height: 48px;
+            width: 104px;
+            border-radius: 28px;
+            background: #ffd166;
+            box-shadow:
+                0 0 24px rgba(255, 209, 102, 0.82),
+                0 0 48px rgba(255, 209, 102, 0.36);
+        }
+
+        .eyes.thinking .eye {
+            width: 76px;
+            height: 112px;
+            background: #b59cff;
+            box-shadow:
+                0 0 24px rgba(181, 156, 255, 0.9),
+                0 0 48px rgba(181, 156, 255, 0.35);
+        }
+
+        .eyes.smile .eye {
+            height: 64px;
+            width: 112px;
+            border-radius: 999px 999px 44px 44px;
+            transform: translateY(20px);
+            background: #71e0ff;
+        }
+
+        .eyes.wink .eye:first-child {
+            height: 16px;
+            width: 110px;
+            border-radius: 999px;
+            transform: translateY(24px) rotate(-5deg);
+            background: #7ef0c1;
+        }
+
+        .eyes.wink .eye:nth-child(2) {
+            height: 86px;
+            background: #7ef0c1;
+        }
+
+        .eyes.proud .eye {
+            height: 54px;
+            width: 116px;
+            border-radius: 36px;
+            transform: translateY(20px) rotate(3deg);
+            background: #ffd166;
+            box-shadow:
+                0 0 24px rgba(255, 209, 102, 0.9),
+                0 0 50px rgba(255, 209, 102, 0.34);
+        }
+
+        .eyes.proud .eye:nth-child(2) {
+            transform: translateY(20px) rotate(-3deg);
+        }
+
+        .eyes.spark .eye {
+            width: 104px;
+            height: 104px;
+            border-radius: 34px 54px 34px 54px;
+            transform: translateY(10px) rotate(45deg);
+            background: #7ef0c1;
+            box-shadow:
+                0 0 30px rgba(126, 240, 193, 0.9),
+                0 0 60px rgba(126, 240, 193, 0.4);
+        }
+
+        .eyes.spark .eye::before,
+        .eyes.spark .eye::after {
+            display: none;
+        }
+
+        .eyes.watch-hand {
+            margin-bottom: 12px;
+        }
+
+        .eyes.watch-hand .eye {
+            height: 82px;
+            width: 112px;
+            border-radius: 48px;
+            transform: translateY(24px) scaleY(0.82);
+            background: #67d8ff;
+        }
+
+        .eyes.watch-hand .eye::after {
+            left: 56%;
+            top: 50%;
+            width: 16%;
+            height: 15%;
+            box-shadow: none;
+            animation: glintHandFocus 4.4s ease-in-out infinite;
+        }
+
+        .eyes.watch-hand .eye::before {
+            left: 42%;
+            top: 64%;
+            animation: pupilHandFocus 4.4s ease-in-out infinite;
+        }
+
+        .eyes.watch-hand.praise .eye {
+            background: #7ef0c1;
+            height: 62px;
+            transform: translateY(28px) scaleY(0.78) rotate(-4deg);
+        }
+
+        .eyes.watch-hand.praise .eye:nth-child(2) {
+            transform: translateY(28px) scaleY(0.78) rotate(4deg);
+        }
+
+        .eyes.blink .eye {
+            height: 12px;
+            border-radius: 999px;
+            transform: translateY(32px);
+        }
+
+        @keyframes pupilLook {
+            0%, 62%, 100% { transform: translate(0, 0); }
+            72% { transform: translate(-10px, -4px); }
+            84% { transform: translate(8px, -2px); }
+        }
+
+        @keyframes glintLook {
+            0%, 62%, 100% { transform: translate(0, 0); }
+            72% { transform: translate(-8px, -3px); }
+            84% { transform: translate(7px, -2px); }
+        }
+
+        @keyframes pupilHandFocus {
+            0%, 70%, 100% { transform: translate(0, 0); }
+            82% { transform: translate(0, -22px); }
+        }
+
+        @keyframes glintHandFocus {
+            0%, 70%, 100% { transform: translate(0, 0); }
+            82% { transform: translate(0, -18px); }
+        }
+
+        .mouth {
+            width: 86px;
+            height: 8px;
+            margin-bottom: 12px;
+            border: 0;
+            border-radius: 999px;
+            background: #7ef0c1;
+            filter: drop-shadow(0 0 14px rgba(126,240,193,0.5));
+            transition: all 0.28s ease;
+        }
+
+        .mouth.happy,
+        .mouth.praise,
+        .mouth.smile {
+            width: 104px;
+            height: 8px;
+            background: #7ef0c1;
+            transform: translateY(-1px);
+        }
+
+        .mouth.wink {
+            width: 82px;
+            height: 8px;
+            background: #7ef0c1;
+            transform: rotate(-3deg);
+        }
+
+        .mouth.proud {
+            width: 72px;
+            height: 7px;
+            background: #ffd166;
+            transform: translateY(2px);
+        }
+
+        .mouth.spark {
+            width: 46px;
+            height: 9px;
+            background: #7ef0c1;
+        }
+
+        .mouth.rest {
+            width: 80px;
+            height: 6px;
+            background: #9beaff;
+        }
+
+        .mouth.serious {
+            width: 82px;
+            height: 7px;
+            background: #ffd166;
+        }
+
+        .mouth.thinking {
+            width: 42px;
+            height: 7px;
+            background: #b59cff;
+            transform: rotate(-5deg);
+        }
+
+        .robot-screen.state-training .eyes {
+            transform: translate(-16px, 2px);
+        }
+
+        .robot-screen.state-instruction .eyes {
+            transform: translate(12px, -2px);
+        }
+
+        .robot-screen.state-rest .eyes {
+            transform: translate(0, 10px);
+        }
+
+        .robot-screen.face-wink .eyes,
+        .robot-screen.face-proud .eyes,
+        .robot-screen.face-spark .eyes {
+            transform: translate(10px, -4px);
+        }
+
+        .motion-stage {
+            width: min(430px, 82vw);
+            height: 190px;
+            position: relative;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cartoon-hand {
+            width: 210px;
+            height: 190px;
+            position: relative;
+            transform-origin: 50% 86%;
+            transition: opacity 0.24s ease, transform 0.24s ease;
+            filter: drop-shadow(0 18px 28px rgba(0,0,0,0.28));
+        }
+
+        .motion-idle .cartoon-hand,
+        .motion-wave .cartoon-hand,
+        .motion-nod .cartoon-hand {
+            opacity: 0;
+            transform: translateY(14px) scale(0.88);
+        }
+
+        .motion-stop .cartoon-hand,
+        .motion-demo_hand .cartoon-hand,
+        .motion-demo_wrist .cartoon-hand,
+        .motion-demo_touch .cartoon-hand {
+            opacity: 1;
+        }
+
+        .motion-demo_hand .cartoon-hand {
+            transform: rotate(-2deg);
+        }
+
+        .hand-svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .hand-line {
+            stroke: rgba(255,255,255,0.78);
+            stroke-width: 5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .pinch-fingers,
+        .pinch-thumb {
+            transform-box: fill-box;
+            transform-origin: center bottom;
+        }
+
+        .motion-demo_hand .pinch-fingers {
+            animation: svgFingerPinch 1.7s ease-in-out infinite;
+        }
+
+        .motion-demo_hand .pinch-thumb {
+            animation: svgThumbPinch 1.7s ease-in-out infinite;
+        }
+
+        .hand-palm {
+            position: absolute;
+            left: 64px;
+            bottom: 10px;
+            width: 76px;
+            height: 102px;
+            border-radius: 42px 30px 30px 42px;
+            background: linear-gradient(100deg, #ffe0b8, #ffb36f);
+            border: 3px solid rgba(255,255,255,0.72);
+            box-shadow:
+                inset -14px -10px 18px rgba(169,77,20,0.18),
+                inset 10px 0 14px rgba(255,255,255,0.22);
+        }
+
+        .hand-wrist {
+            position: absolute;
+            left: 77px;
+            bottom: -20px;
+            width: 42px;
+            height: 45px;
+            border-radius: 16px 16px 18px 18px;
+            background: linear-gradient(180deg, #ffbf7d, #f28b50);
+            border: 3px solid rgba(255,255,255,0.58);
+            border-top: 0;
+        }
+
+        .finger {
+            position: absolute;
+            bottom: 90px;
+            width: 27px;
+            height: 78px;
+            border-radius: 999px;
+            background: linear-gradient(160deg, #ffe8c8, #ffb674);
+            border: 3px solid rgba(255,255,255,0.72);
+            transform-origin: 50% 94%;
+            box-shadow: inset -5px -8px 10px rgba(159,76,24,0.14);
+        }
+
+        .finger.one {
+            left: 54px;
+            height: 62px;
+            transform: rotate(-10deg);
+        }
+
+        .finger.two {
+            left: 76px;
+            height: 88px;
+            transform: rotate(-2deg);
+        }
+
+        .finger.three {
+            left: 100px;
+            height: 86px;
+            transform: rotate(7deg);
+        }
+
+        .finger.four {
+            left: 122px;
+            height: 66px;
+            transform: rotate(18deg);
+        }
+
+        .thumb {
+            position: absolute;
+            left: 32px;
+            bottom: 50px;
+            width: 78px;
+            height: 30px;
+            border-radius: 999px;
+            background: linear-gradient(160deg, #ffe4bf, #ffb06d);
+            border: 3px solid rgba(255,255,255,0.72);
+            transform: rotate(-18deg);
+            transform-origin: 88% 50%;
+            box-shadow: inset -5px -6px 10px rgba(159,76,24,0.13);
+            z-index: 3;
+        }
+
+        .motion-demo_hand .cartoon-hand {
+            animation: handBob 1.7s ease-in-out infinite;
+        }
+
+        .motion-demo_hand .finger.one {
+            animation: fingerCloseOne 1.7s ease-in-out infinite;
+        }
+
+        .motion-demo_hand .finger.two {
+            animation: fingerCloseTwo 1.7s ease-in-out infinite;
+        }
+
+        .motion-demo_hand .finger.three {
+            animation: fingerCloseThree 1.7s ease-in-out infinite;
+        }
+
+        .motion-demo_hand .finger.four {
+            animation: fingerCloseFour 1.7s ease-in-out infinite;
+        }
+
+        .motion-demo_hand .thumb {
+            animation: thumbPinch 1.7s ease-in-out infinite;
+        }
+
+        .motion-demo_wrist .cartoon-hand {
+            animation: wristFlex 1.45s ease-in-out infinite;
+        }
+
+        .motion-demo_touch .cartoon-hand {
+            animation: touchTargets 2.1s ease-in-out infinite;
+        }
+
+        .motion-stop .cartoon-hand {
+            transform: rotate(0deg) scale(1.02);
+        }
+
+        .motion-stop .finger,
+        .motion-stop .thumb {
+            animation: none;
+        }
+
+        .touch-dot {
+            position: absolute;
+            top: 94px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #7ef0c1;
+            box-shadow: 0 0 18px rgba(126,240,193,0.95);
+            opacity: 0;
+        }
+
+        .touch-dot.left {
+            left: 24px;
+        }
+
+        .touch-dot.right {
+            right: 24px;
+        }
+
+        .motion-demo_touch .touch-dot {
+            opacity: 1;
+        }
+
+        @keyframes handBob {
+            0%, 100% { transform: rotate(-2deg) translateY(2px) scale(1); }
+            50% { transform: rotate(-2deg) translateY(-4px) scale(0.99); }
+        }
+
+        @keyframes svgFingerPinch {
+            0%, 100% { transform: rotate(0deg) translate(0, 0); }
+            50% { transform: rotate(15deg) translate(12px, 20px); }
+        }
+
+        @keyframes svgThumbPinch {
+            0%, 100% { transform: rotate(0deg) translate(0, 0); }
+            50% { transform: rotate(-16deg) translate(18px, -18px); }
+        }
+
+        @keyframes fingerCloseOne {
+            0%, 100% { transform: rotate(-10deg); }
+            50% { transform: rotate(12deg) translate(14px, 14px); }
+        }
+
+        @keyframes fingerCloseTwo {
+            0%, 100% { transform: rotate(-2deg); }
+            50% { transform: rotate(22deg) translate(8px, 22px); }
+        }
+
+        @keyframes fingerCloseThree {
+            0%, 100% { transform: rotate(7deg); }
+            50% { transform: rotate(-16deg) translate(-8px, 22px); }
+        }
+
+        @keyframes fingerCloseFour {
+            0%, 100% { transform: rotate(18deg); }
+            50% { transform: rotate(-8deg) translate(-14px, 14px); }
+        }
+
+        @keyframes thumbPinch {
+            0%, 100% { transform: rotate(-18deg); }
+            50% { transform: rotate(8deg) translate(28px, -16px); }
+        }
+
+        @keyframes wristFlex {
+            0%, 100% { transform: rotate(-16deg) translateX(-8px); }
+            50% { transform: rotate(18deg) translateX(8px); }
+        }
+
+        @keyframes touchTargets {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-92px) rotate(-10deg); }
+            50% { transform: translateX(0) rotate(0deg); }
+            75% { transform: translateX(92px) rotate(10deg); }
+        }
+
+        .speech-card {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+        }
+
+        .progress-area {
+            display: none;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            opacity: 0.72;
+            margin-bottom: 7px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 11px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(255,255,255,0.13);
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: #35caff;
+            box-shadow: 0 0 16px rgba(53, 202, 255, 0.9);
+            transition: width 0.3s ease;
+        }
+
+        .quick-actions {
+            position: absolute;
+            left: 18px;
+            right: 18px;
+            bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 22;
+        }
+
+        .quick-button {
+            width: 56px;
+            height: 56px;
+            padding: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.09);
+            border: 1px solid rgba(255,255,255,0.16);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            line-height: 1;
+            color: white;
+            user-select: none;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 28px rgba(0,0,0,0.24);
+        }
+
+        .quick-button.complete {
+            width: 64px;
+            height: 64px;
+            background: rgba(53,202,255,0.22);
+            border-color: rgba(53,202,255,0.35);
+        }
+
+        .voice-indicator {
+            position: absolute;
+            left: 50%;
+            bottom: 64px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            transform: translateX(-50%);
+            background: rgba(126,240,193,0.22);
+            border: 1px solid rgba(126,240,193,0.52);
+            z-index: 13;
+            box-shadow:
+                0 0 26px rgba(126,240,193,0.38),
+                0 8px 20px rgba(0,0,0,0.24);
+        }
+
+        .voice-indicator.listening {
+            background: rgba(239,68,68,0.26);
+            border-color: rgba(255,146,146,0.72);
+            animation: voicePulse 1.1s ease-in-out infinite;
+        }
+
+        .voice-status {
+            position: absolute;
+            left: 50%;
+            bottom: 110px;
+            max-width: min(360px, 78vw);
+            min-height: 24px;
+            transform: translateX(-50%);
+            color: rgba(255,255,255,0.72);
+            font-size: 13px;
+            text-align: center;
+            pointer-events: none;
+            z-index: 11;
+        }
+
+        @keyframes voicePulse {
+            0%, 100% { box-shadow: 0 0 22px rgba(239,68,68,0.36), 0 16px 34px rgba(0,0,0,0.3); }
+            50% { box-shadow: 0 0 46px rgba(239,68,68,0.68), 0 16px 34px rgba(0,0,0,0.3); }
+        }
+
+        .debug-panel {
+            position: absolute;
+            left: 50%;
+            bottom: 76px;
+            width: min(640px, calc(100vw - 28px));
+            transform: translateX(-50%) translateY(10px);
+            padding: 14px;
+            border-radius: 18px;
+            background: rgba(5,9,18,0.86);
+            border: 1px solid rgba(255,255,255,0.12);
+            backdrop-filter: blur(12px);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 20;
+            transition: opacity 0.18s ease, transform 0.18s ease;
+        }
+
+        .debug-panel.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .debug-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        button {
+            border: none;
+            border-radius: 14px;
+            padding: 12px 8px;
+            color: white;
+            background: rgba(53,202,255,0.25);
+            border: 1px solid rgba(53,202,255,0.38);
+            font-size: 14px;
+        }
+
+        .debug-input {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        input {
+            flex: 1;
+            border: 1px solid rgba(255,255,255,0.16);
+            border-radius: 14px;
+            padding: 12px;
+            background: rgba(255,255,255,0.08);
+            color: white;
+            outline: none;
+            font-size: 15px;
+        }
+
+        @media (orientation: landscape) {
+            .face-area {
+                padding-top: 58px;
+                padding-bottom: 96px;
+            }
+
+            .eye {
+                width: 86px;
+                height: 106px;
+            }
+
+            .eyes {
+                gap: 74px;
+                margin-bottom: 20px;
+            }
+
+            .quick-actions {
+                left: 14px;
+                right: 14px;
+                bottom: 12px;
+            }
+
+            .emotion-mark {
+                height: 42px;
+                font-size: 36px;
+            }
+
+            .motion-stage {
+                height: 148px;
+                margin-bottom: 4px;
+                transform: scale(0.86);
+            }
+
+            .speech-card {
+                bottom: 104px;
+                min-height: 48px;
+                max-height: 86px;
+                padding: 10px 14px;
+                font-size: 15px;
+            }
+
+            .quick-button {
+                width: 48px;
+                height: 48px;
+                font-size: 24px;
+            }
+
+            .quick-button.complete {
+                width: 56px;
+                height: 56px;
+            }
+        }
+
+        @media (max-width: 640px) and (orientation: portrait) {
+            .face-area {
+                padding-top: 74px;
+                padding-bottom: 132px;
+            }
+
+            .eye {
+                width: 72px;
+                height: 94px;
+            }
+
+            .eyes {
+                gap: 42px;
+                margin-bottom: 28px;
+            }
+
+            .motion-stage {
+                height: 190px;
+                margin-bottom: 6px;
+            }
+
+            .quick-actions {
+                left: 12px;
+                right: 12px;
+                bottom: 10px;
+            }
+
+            .quick-button {
+                width: 52px;
+                height: 52px;
+                font-size: 25px;
+            }
+
+            .quick-button.complete {
+                width: 62px;
+                height: 62px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div id="robotScreen" class="robot-screen" ondblclick="toggleDebug()">
+    <div class="top-info">
+        <div class="pill">康复陪练 Bot</div>
+        <div class="pill"><span id="state">idle</span> · <span id="exercise">未开始</span></div>
+    </div>
+
+    <div class="face-area">
+        <div id="emotionMark" class="emotion-mark">✨</div>
+
+        <div id="eyes" class="eyes care">
+            <div class="eye"></div>
+            <div class="eye"></div>
+        </div>
+
+        <div id="mouth" class="mouth care"></div>
+
+        <div id="motionStage" class="motion-stage motion-idle" aria-hidden="true">
+            <div class="touch-dot left"></div>
+            <div class="cartoon-hand">
+                <svg class="hand-svg" viewBox="0 0 210 190" role="img">
+                    <defs>
+                        <linearGradient id="skinGradient" x1="30" y1="24" x2="168" y2="168" gradientUnits="userSpaceOnUse">
+                            <stop offset="0" stop-color="#ffe8c8"/>
+                            <stop offset="0.58" stop-color="#ffc178"/>
+                            <stop offset="1" stop-color="#ff9859"/>
+                        </linearGradient>
+                        <linearGradient id="skinDarkGradient" x1="54" y1="112" x2="150" y2="152" gradientUnits="userSpaceOnUse">
+                            <stop offset="0" stop-color="#ffd7a4"/>
+                            <stop offset="1" stop-color="#ff9f5f"/>
+                        </linearGradient>
+                    </defs>
+                    <path class="hand-line" d="M82 102 C84 72 105 55 135 58 C158 61 174 79 176 105 C178 136 157 159 123 162 C93 165 74 143 82 102 Z" fill="url(#skinGradient)"/>
+                    <path class="hand-line" d="M114 65 C102 42 107 28 121 26 C135 24 142 40 143 66 Z" fill="url(#skinGradient)"/>
+                    <path class="hand-line" d="M140 66 C137 43 144 31 157 33 C170 36 174 52 168 78 Z" fill="url(#skinGradient)"/>
+                    <path class="hand-line" d="M96 82 C84 60 87 45 100 42 C113 39 121 54 124 75 Z" fill="url(#skinGradient)"/>
+                    <g class="pinch-fingers">
+                        <path class="hand-line" d="M76 102 C55 83 50 64 62 55 C75 45 94 62 110 88 C118 101 113 112 101 115 C92 117 84 111 76 102 Z" fill="url(#skinGradient)"/>
+                    </g>
+                    <g class="pinch-thumb">
+                        <path class="hand-line" d="M76 134 C53 144 42 160 51 171 C61 184 84 174 107 156 C121 145 124 132 115 124 C106 116 94 126 76 134 Z" fill="url(#skinDarkGradient)"/>
+                    </g>
+                    <rect class="hand-line" x="118" y="154" width="44" height="34" rx="15" fill="url(#skinDarkGradient)"/>
+                    <path d="M112 102 C130 91 151 94 162 110" fill="none" stroke="rgba(255,255,255,0.34)" stroke-width="4" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="touch-dot right"></div>
+        </div>
+
+        <div id="reply" class="speech-card">
+        </div>
+
+        <div class="progress-area">
+            <div class="progress-text">
+                <span>训练进度</span>
+                <span><span id="count">0</span> / <span id="target">0</span></span>
+            </div>
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="debugPanel" class="debug-panel">
+        <div class="debug-buttons">
+            <button onclick="toggleVoice()">说话</button>
+            <button onclick="sendText('可以开始')">开始</button>
+            <button onclick="sendText('休息一下')">休息</button>
+            <button onclick="sendText('我有疼痛')">疼痛</button>
+            <button onclick="sendText('结束训练')">结束</button>
+            <button onclick="sendText('再说一遍')">重复</button>
+        </div>
+        <div class="debug-input">
+            <input id="customInput" placeholder="输入一句话，如：没有，可以开始">
+            <button onclick="sendCustom()">发送</button>
+        </div>
+    </div>
+
+    <div id="voiceIndicator" class="voice-indicator"></div>
+    <div id="voiceStatus" class="voice-status"></div>
+
+    <div class="quick-actions">
+        <button class="quick-button complete" onclick="mainAction()" aria-label="完成">✓</button>
+        <button class="quick-button" onclick="toggleDebug()" aria-label="菜单">⋯</button>
+    </div>
+</div>
+
+<script>
+    let idleTimer = null;
+    let recognition = null;
+    let isListening = false;
+    let isSpeaking = false;
+    let autoVoiceEnabled = true;
+    let voiceRestartTimer = null;
+    let preferredVoice = null;
+    let isSending = false;
+    let finalVoiceText = "";
+    let voiceSilenceTimer = null;
+
+    function faceToClass(face) {
+        const map = {
+            "happy": "happy",
+            "praise": "praise",
+            "smile": "smile",
+            "wink": "wink",
+            "proud": "proud",
+            "spark": "spark",
+            "care": "care",
+            "serious": "serious",
+            "thinking": "thinking",
+            "rest": "rest"
+        };
+        return map[face] || "care";
+    }
+
+    function faceToMark(face) {
+        const map = {
+            "happy": "♪",
+            "praise": "✓",
+            "smile": "♪",
+            "wink": "✓",
+            "proud": "★",
+            "spark": "✦",
+            "care": "✨",
+            "serious": "!",
+            "thinking": "?",
+            "rest": "z"
+        };
+        return map[face] || "✨";
+    }
+
+    function motionToClass(motion) {
+        const map = {
+            "idle": "motion-idle",
+            "wave": "motion-wave",
+            "nod": "motion-nod",
+            "stop": "motion-stop",
+            "demo_hand": "motion-demo_hand",
+            "demo_wrist": "motion-demo_wrist",
+            "demo_touch": "motion-demo_touch"
+        };
+        return map[motion] || "motion-idle";
+    }
+
+    function isHandMotion(motion) {
+        return ["demo_hand", "demo_wrist", "demo_touch"].includes(motion);
+    }
+
+    function speak(text) {
+        if (!("speechSynthesis" in window)) {
+            setVoiceStatus("浏览器不能语音播报，请看屏幕文字");
+            return;
+        }
+
+        stopVoiceListening();
+        window.speechSynthesis.cancel();
+        isSpeaking = true;
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "zh-CN";
+        utterance.rate = 0.86;
+        utterance.pitch = 1.02;
+        utterance.volume = 0.95;
+        if (preferredVoice) {
+            utterance.voice = preferredVoice;
+        }
+        utterance.onend = () => {
+            isSpeaking = false;
+            setVoiceStatus("可以直接说话");
+            startVoiceListeningSoon(1200);
+        };
+        utterance.onerror = () => {
+            isSpeaking = false;
+            setVoiceStatus("可以直接说话");
+            startVoiceListeningSoon(1200);
+        };
+
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function pickVoice() {
+        if (!("speechSynthesis" in window)) {
+            return;
+        }
+
+        const voices = window.speechSynthesis.getVoices();
+        const zhVoices = voices.filter(voice => /zh|cmn|yue/i.test(voice.lang + " " + voice.name));
+        preferredVoice =
+            zhVoices.find(voice => /Ting|Sin|Mei|Li|Xiaoxiao|Mandarin|Chinese/i.test(voice.name)) ||
+            zhVoices[0] ||
+            voices.find(voice => /Chinese|Mandarin/i.test(voice.name)) ||
+            null;
+    }
+
+    if ("speechSynthesis" in window) {
+        pickVoice();
+        window.speechSynthesis.onvoiceschanged = pickVoice;
+    }
+
+    function setVoiceStatus(text) {
+        document.getElementById("voiceStatus").innerText = text || "";
+    }
+
+    function setupVoice() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (!SpeechRecognition) {
+            setVoiceStatus("当前浏览器不支持语音输入，请用菜单里的输入框");
+            return null;
+        }
+
+        const recognizer = new SpeechRecognition();
+        recognizer.lang = "zh-CN";
+        recognizer.continuous = false;
+        recognizer.interimResults = true;
+
+        recognizer.onstart = () => {
+            isListening = true;
+            finalVoiceText = "";
+            if (voiceSilenceTimer) {
+                clearTimeout(voiceSilenceTimer);
+                voiceSilenceTimer = null;
+            }
+            document.getElementById("voiceIndicator").classList.add("listening");
+            setVoiceStatus("正在听，说完后我会回应");
+        };
+
+        recognizer.onresult = (event) => {
+            let finalText = "";
+            let interimText = "";
+
+            for (let i = event.resultIndex; i < event.results.length; i += 1) {
+                const text = event.results[i][0].transcript.trim();
+                if (event.results[i].isFinal) {
+                    finalText += text + " ";
+                } else {
+                    interimText += text;
+                }
+            }
+
+            if (finalText) {
+                finalVoiceText += finalText;
+            }
+
+            setVoiceStatus((finalVoiceText + interimText).trim() || "正在听，说完后我会回应");
+
+            if (voiceSilenceTimer) {
+                clearTimeout(voiceSilenceTimer);
+            }
+
+            voiceSilenceTimer = setTimeout(() => {
+                if (recognition && isListening) {
+                    recognition.stop();
+                }
+            }, 1800);
+        };
+
+        recognizer.onerror = (event) => {
+            if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+                setVoiceStatus("麦克风没有权限，请在浏览器地址栏允许麦克风");
+                autoVoiceEnabled = false;
+                return;
+            }
+
+            if (event.error === "no-speech") {
+                setVoiceStatus("没有听到声音，可以点“说话”再试");
+                return;
+            }
+
+            setVoiceStatus("没有听清，可以点“说话”再说一遍");
+        };
+
+        recognizer.onend = () => {
+            isListening = false;
+            if (voiceSilenceTimer) {
+                clearTimeout(voiceSilenceTimer);
+                voiceSilenceTimer = null;
+            }
+            document.getElementById("voiceIndicator").classList.remove("listening");
+
+            const text = finalVoiceText.trim();
+            finalVoiceText = "";
+
+            if (text) {
+                sendText(text);
+            } else if (autoVoiceEnabled) {
+                setVoiceStatus("没听清，等你再说一遍");
+                startVoiceListeningSoon(1300);
+            } else {
+                setTimeout(() => setVoiceStatus(""), 1800);
+            }
+        };
+
+        return recognizer;
+    }
+
+    function startVoiceListeningSoon(delay = 500) {
+        if (!autoVoiceEnabled) {
+            return;
+        }
+
+        if (voiceRestartTimer) {
+            clearTimeout(voiceRestartTimer);
+        }
+
+        voiceRestartTimer = setTimeout(startVoiceListening, delay);
+    }
+
+    async function ensureMicPermission() {
+        if (!window.isSecureContext) {
+            autoVoiceEnabled = false;
+            setVoiceStatus("手机开麦需要 HTTPS，请用 https 地址打开");
+            return false;
+        }
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            autoVoiceEnabled = false;
+            setVoiceStatus("这个浏览器不能调用麦克风，请用文字输入");
+            return false;
+        }
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+            stream.getTracks().forEach(track => track.stop());
+            return true;
+        } catch (error) {
+            autoVoiceEnabled = false;
+            setVoiceStatus("麦克风没有权限，请在浏览器地址栏允许麦克风");
+            return false;
+        }
+    }
+
+    async function startVoiceListening() {
+        setVoiceStatus("正在打开麦克风");
+
+        const hasMicPermission = await ensureMicPermission();
+        if (!hasMicPermission) {
+            return;
+        }
+
+        if (!recognition) {
+            recognition = setupVoice();
+        }
+
+        if (!recognition || isListening) {
+            return;
+        }
+
+        try {
+            recognition.start();
+        } catch (e) {
+            setVoiceStatus("麦克风启动失败，请刷新后再试");
+        }
+    }
+
+    function stopVoiceListening() {
+        if (voiceRestartTimer) {
+            clearTimeout(voiceRestartTimer);
+            voiceRestartTimer = null;
+        }
+
+        if (voiceSilenceTimer) {
+            clearTimeout(voiceSilenceTimer);
+            voiceSilenceTimer = null;
+        }
+
+        if (recognition && isListening) {
+            recognition.stop();
+        }
+    }
+
+    function activateVoiceFromGesture() {
+        autoVoiceEnabled = true;
+        ensureMicPermission();
+        if (!isSpeaking && !isListening) {
+            startVoiceListeningSoon(150);
+        }
+    }
+
+    document.addEventListener("pointerdown", activateVoiceFromGesture, {once: true});
+    document.addEventListener("keydown", activateVoiceFromGesture, {once: true});
+
+    async function toggleVoice() {
+        if (isListening) {
+            autoVoiceEnabled = false;
+            stopVoiceListening();
+        } else {
+            if (isSpeaking && "speechSynthesis" in window) {
+                window.speechSynthesis.cancel();
+                isSpeaking = false;
+            }
+            autoVoiceEnabled = true;
+            await startVoiceListening();
+        }
+    }
+
+    function blink() {
+        const eyes = document.getElementById("eyes");
+        const oldClass = eyes.className;
+        eyes.className = oldClass + " blink";
+
+        setTimeout(() => {
+            eyes.className = oldClass;
+        }, 160);
+    }
+
+    setInterval(blink, 4200);
+
+    function resetIdleTimer() {
+        if (idleTimer) {
+            clearTimeout(idleTimer);
+        }
+
+        idleTimer = setTimeout(() => {
+            const state = document.getElementById("state").textContent;
+
+            if (state === "training") {
+                setVoiceStatus("做完后说“完成”");
+            } else if (state === "rest") {
+                setVoiceStatus("休息好了可以说“继续”");
+            } else if (state === "ask_training") {
+                setVoiceStatus("准备好了可以说“开始”");
+            }
+        }, 30000);
+    }
+
+    function updateUI(data) {
+        const eyes = document.getElementById("eyes");
+        const handFocusClass = isHandMotion(data.motion) ? " watch-hand" : "";
+        eyes.className = "eyes " + faceToClass(data.face) + handFocusClass;
+        document.getElementById("mouth").className = "mouth " + faceToClass(data.face);
+        document.getElementById("motionStage").className = "motion-stage " + motionToClass(data.motion);
+        document.getElementById("robotScreen").className =
+            "robot-screen state-" + data.state + " face-" + faceToClass(data.face);
+
+        document.getElementById("emotionMark").innerText = faceToMark(data.face);
+        document.getElementById("reply").innerText = data.reply;
+        document.getElementById("state").innerText = data.state;
+        document.getElementById("exercise").innerText = data.exercise_name;
+        document.getElementById("count").innerText = data.count;
+        document.getElementById("target").innerText = data.target;
+
+        let percent = 0;
+        if (data.target > 0) {
+            percent = Math.min(100, Math.round((data.count / data.target) * 100));
+        }
+        document.getElementById("progressFill").style.width = percent + "%";
+
+        speak(data.reply);
+    }
+
+    async function sendText(text) {
+        if (isSending) {
+            return;
+        }
+
+        isSending = true;
+        setVoiceStatus("正在回应");
+        resetIdleTimer();
+
+        try {
+            const response = await fetch("/chat", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({text: text})
+            });
+
+            if (!response.ok) {
+                throw new Error("HTTP " + response.status);
+            }
+
+            const data = await response.json();
+            updateUI(data);
+        } catch (error) {
+            document.getElementById("reply").innerText = "我这边暂时没有连上，请稍后再试。";
+            setVoiceStatus("请求失败，请看终端错误");
+        } finally {
+            isSending = false;
+        }
+    }
+
+    function mainAction() {
+        const state = document.getElementById("state").textContent;
+
+        if (state === "ask_training") {
+            sendText("可以开始");
+        } else if (state === "pre_check") {
+            sendText("没有，可以开始");
+        } else if (state === "instruction") {
+            sendText("可以开始");
+        } else if (state === "training") {
+            sendText("完成");
+        } else if (state === "rest") {
+            sendText("继续");
+        } else if (state === "feedback") {
+            sendText("没有不舒服");
+        } else if (state === "summary" || state === "idle") {
+            sendText("可以开始");
+        } else if (state === "safety_stop") {
+            speak("现在先休息，不要继续训练。");
+        } else {
+            sendText("可以开始");
+        }
+    }
+
+    function sendCustom() {
+        const input = document.getElementById("customInput");
+        const text = input.value.trim();
+
+        if (text.length > 0) {
+            sendText(text);
+            input.value = "";
+        }
+    }
+
+    document.getElementById("customInput").addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            sendCustom();
+        }
+    });
+
+    function replay() {
+        const text = document.getElementById("reply").innerText;
+        speak(text);
+    }
+
+    function toggleDebug() {
+        const panel = document.getElementById("debugPanel");
+        panel.classList.toggle("show");
+    }
+
+    async function startAgent() {
+        try {
+            const response = await fetch("/start");
+            if (!response.ok) {
+                throw new Error("HTTP " + response.status);
+            }
+            const data = await response.json();
+            updateUI(data);
+            resetIdleTimer();
+        } catch (error) {
+            document.getElementById("reply").innerText = "机器人启动失败，请检查后端服务是否还在运行。";
+            setVoiceStatus("启动失败");
+        }
+    }
+
+    window.onload = startAgent;
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+[
+  {
+    "exercise_id": "finger_open_close",
+    "name": "手指张合训练",
+    "target": "训练手指主动活动与灵活性",
+    "reps": 10,
+    "steps": [
+      "请把手自然放在桌面上。",
+      "慢慢张开五指。",
+      "再轻轻握拳。",
+      "动作不用快，保持平稳。"
+    ],
+    "face": "care",
+    "motion": "demo_hand"
+  },
+  {
+    "exercise_id": "wrist_flex_extend",
+    "name": "手腕屈伸训练",
+    "target": "训练手腕活动度",
+    "reps": 8,
+    "steps": [
+      "请把前臂轻轻放在桌面上。",
+      "慢慢把手腕向上抬起。",
+      "再慢慢放下。",
+      "动作保持轻柔，不要用力过猛。"
+    ],
+    "face": "care",
+    "motion": "demo_wrist"
+  },
+  {
+    "exercise_id": "table_touch",
+    "name": "桌面触点训练",
+    "target": "训练上肢伸展与协调能力",
+    "reps": 6,
+    "steps": [
+      "请把手放在桌面中央。",
+      "慢慢触碰左侧目标点。",
+      "回到中央。",
+      "再慢慢触碰右侧目标点。"
+    ],
+    "face": "care",
+    "motion": "demo_touch"
+  }
+]

@@ -1,0 +1,18 @@
+# API keys and local configuration (never commit these)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local/editor files
+.DS_Store
+.idea/
+.vscode/
+
+# Runtime output
+*.log
