@@ -55,6 +55,8 @@ Windows 激活虚拟环境可使用：
 
 ### 3. 配置大模型（可选）
 
+本仓库不提供作者的 API Key。每位使用者需要配置自己的 Key，相关模型调用计入使用者自己的服务商账户。
+
 复制配置示例：
 
 ```bash
@@ -73,7 +75,7 @@ Copy-Item .env.example .env
 OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-也可以配置 `ANTHROPIC_API_KEY` 使用 Claude。若两个 Key 都存在，项目优先使用 OpenAI。没有 API Key 时，基础训练流程仍可运行，但对话会使用本地兜底话术。
+也可以配置 `ANTHROPIC_API_KEY` 使用 Claude。若两个 Key 都存在，项目优先使用 OpenAI。
 
 ### 4. 启动
 
@@ -100,16 +102,25 @@ rehab_chatbot/
 
 完整的设计思路、系统架构、状态机和安全机制请阅读 [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)。
 
-## API Key 与隐私安全
+## API Key 与运行模式
 
-- 仓库不会提供或共享作者的 API Key；
-- 每位使用者需要在自己的 `.env` 中配置自己的 Key；
-- `.env` 已被 `.gitignore` 排除，正常提交不会上传；
-- 仓库只保留不含真实密钥的 `.env.example`；
+### 配置 API Key
+
+系统会使用大模型润色训练话术，并提供更自然的日常对话能力。模型调用产生的用量由使用者自己的 API 账户承担，不会使用作者的账户或额度。
+
+### 不配置 API Key
+
+项目仍然可以启动。训练选择、动作说明、完成计数、休息、继续和安全停止等基础流程均可使用，但系统会采用本地固定话术，AI 润色和开放式闲聊能力不可用。
+
+### Key 安全说明
+
+- `.env` 已被 `.gitignore` 排除，不会随正常的 Git 提交上传；
+- 仓库只包含不带真实密钥的 `.env.example`；
 - API Key 仅由后端读取，不会发送到浏览器前端；
+- 请勿将 Key 写入 Python、HTML、截图、日志或 Git 提交信息；
 - 当前训练会话只保存在运行机器的内存中，服务重启后清空。
 
-如果某个 Key 曾出现在公开提交、截图或日志中，应立即在服务商后台撤销，并生成新 Key。
+如果某个 Key 曾出现在公开提交、截图或日志中，仅删除文件并不安全；应立即在服务商后台撤销旧 Key，并生成新 Key。
 
 ## 当前边界
 
